@@ -83,4 +83,45 @@ export interface VehicleTracking {
   longitude: number;
   timestamp: string;
   status: 'active' | 'inactive';
+  created_at: string;
+}
+
+export interface ColonyArea {
+  id: string;
+  name: string;
+  address: string;
+  ward_number: string;
+  zone_number: string;
+  manager_id?: string;
+  total_buildings: number;
+  total_residents: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  read: boolean;
+  data?: Record<string, any>;
+  created_at: string;
+}
+
+// Database response types with joins
+export interface WasteSubmissionWithCollector extends WasteSubmission {
+  garbage_collector_profiles?: {
+    personal_name: string;
+    employee_id: string;
+  };
+}
+
+export interface ColonyAreaWithManager extends ColonyArea {
+  colony_manager_profiles?: {
+    personal_name: string;
+    contact_number: string;
+  };
 }
