@@ -3,16 +3,19 @@ import { Colors } from '@/constants/Colors';
 
 interface NotificationBadgeProps {
   count: number;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
+  color?: string;
 }
 
-export function NotificationBadge({ count, size = 'md' }: NotificationBadgeProps) {
+export function NotificationBadge({ count, size = 'md', color = Colors.error }: NotificationBadgeProps) {
   if (count === 0) return null;
 
+  const displayCount = count > 99 ? '99+' : count.toString();
+
   return (
-    <View style={[styles.badge, styles[size]]}>
+    <View style={[styles.badge, styles[size], { backgroundColor: color }]}>
       <Text style={[styles.text, styles[`${size}Text`]]}>
-        {count > 99 ? '99+' : count.toString()}
+        {displayCount}
       </Text>
     </View>
   );
@@ -20,7 +23,6 @@ export function NotificationBadge({ count, size = 'md' }: NotificationBadgeProps
 
 const styles = StyleSheet.create({
   badge: {
-    backgroundColor: Colors.error,
     borderRadius: 10,
     minWidth: 20,
     alignItems: 'center',
@@ -28,14 +30,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
+    borderWidth: 2,
+    borderColor: Colors.white,
   },
   sm: {
     height: 16,
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
+    minWidth: 16,
   },
   md: {
     height: 20,
+    paddingHorizontal: 6,
+    minWidth: 20,
+  },
+  lg: {
+    height: 24,
     paddingHorizontal: 8,
+    minWidth: 24,
   },
   text: {
     color: Colors.white,
@@ -46,5 +57,8 @@ const styles = StyleSheet.create({
   },
   mdText: {
     fontSize: 12,
+  },
+  lgText: {
+    fontSize: 14,
   },
 });

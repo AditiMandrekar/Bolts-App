@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { getUserNotifications, markNotificationAsRead } from '@/lib/database';
+import { getUserNotifications, markNotificationAsRead, getUnreadNotificationCount } from '@/lib/database';
 import { useAuth } from './useAuth';
 import type { Notification } from '@/types/database';
 
@@ -13,7 +13,12 @@ export function useNotifications() {
   useEffect(() => {
     if (user) {
       fetchNotifications();
+      fetchUnreadCount();
       subscribeToNotifications();
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+      setLoading(false);
     }
   }, [user]);
 
@@ -23,11 +28,21 @@ export function useNotifications() {
     try {
       const data = await getUserNotifications(user.id);
       setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.read).length || 0);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUnreadCount = async () => {
+    if (!user) return;
+
+    try {
+      const count = await getUnreadNotificationCount(user.id);
+      setUnreadCount(count);
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
     }
   };
 
@@ -44,8 +59,10 @@ export function useNotifications() {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        () => {
+        (payload) => {
+          console.log('Notification change:', payload);
           fetchNotifications();
+          fetchUnreadCount();
         }
       )
       .subscribe();
@@ -86,12 +103,35 @@ export function useNotifications() {
     }
   };
 
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      
+      // Update unread count if the deleted notification was unread
+      const deletedNotification = notifications.find(n => n.id === notificationId);
+      if (deletedNotification && !deletedNotification.read) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
   return {
     notifications,
     loading,
     unreadCount,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
     refetch: fetchNotifications,
   };
 }

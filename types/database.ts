@@ -3,6 +3,7 @@ export interface User {
   email: string;
   role: 'garbage_collector' | 'colony_manager' | 'government_authority';
   created_at: string;
+  updated_at: string;
 }
 
 export interface GarbageCollectorProfile {
@@ -59,6 +60,7 @@ export interface GovernmentAuthorityProfile {
   department: string;
   position: string;
   jurisdiction: string;
+  office_address: string;
   created_at: string;
   updated_at: string;
 }
@@ -70,7 +72,11 @@ export interface WasteSubmission {
   waste_type: string;
   weight: number;
   colony_name: string;
+  building_number?: string;
+  house_number?: string;
   image_url?: string;
+  notes?: string;
+  status: 'submitted' | 'verified' | 'processed';
   created_at: string;
   updated_at: string;
 }
@@ -81,8 +87,10 @@ export interface VehicleTracking {
   collector_id: string;
   latitude: number;
   longitude: number;
+  location_name?: string;
   timestamp: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'maintenance';
+  speed?: number;
   created_at: string;
 }
 
@@ -95,7 +103,10 @@ export interface ColonyArea {
   manager_id?: string;
   total_buildings: number;
   total_residents: number;
+  total_units: number;
   active: boolean;
+  latitude?: number;
+  longitude?: number;
   created_at: string;
   updated_at: string;
 }
@@ -107,8 +118,47 @@ export interface Notification {
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
   read: boolean;
+  action_url?: string;
   data?: Record<string, any>;
+  expires_at?: string;
   created_at: string;
+}
+
+export interface WasteCategory {
+  id: string;
+  name: string;
+  description: string;
+  category_type: 'recyclable' | 'biodegradable' | 'hazardous' | 'other';
+  color_code: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CollectionRoute {
+  id: string;
+  name: string;
+  collector_id: string;
+  colonies: string[];
+  start_time: string;
+  end_time: string;
+  days_of_week: string[];
+  route_coordinates: any[];
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WasteAnalytics {
+  id: string;
+  date: string;
+  colony_name: string;
+  waste_type: string;
+  total_weight: number;
+  submission_count: number;
+  collector_count: number;
+  created_at: string;
+  updated_at: string;
 }
 
 // Database response types with joins
@@ -116,6 +166,7 @@ export interface WasteSubmissionWithCollector extends WasteSubmission {
   garbage_collector_profiles?: {
     personal_name: string;
     employee_id: string;
+    vehicle_number: string;
   };
 }
 
@@ -124,4 +175,67 @@ export interface ColonyAreaWithManager extends ColonyArea {
     personal_name: string;
     contact_number: string;
   };
+}
+
+export interface VehicleTrackingWithCollector extends VehicleTracking {
+  garbage_collector_profiles?: {
+    personal_name: string;
+    vehicle_number: string;
+  };
+}
+
+export interface CollectionRouteWithCollector extends CollectionRoute {
+  garbage_collector_profiles?: {
+    personal_name: string;
+    vehicle_number: string;
+  };
+}
+
+// Form data types
+export interface WasteFormData {
+  dateTime: string;
+  wasteType: string;
+  weight: string;
+  colonyName: string;
+  buildingNumber?: string;
+  houseNumber?: string;
+  notes?: string;
+  imageUri?: string;
+}
+
+export interface CollectorProfileFormData {
+  personal_name: string;
+  employee_id: string;
+  contact_number: string;
+  years_of_experience: string;
+  complete_address: string;
+  assigned_areas: string;
+  shift_timing: string;
+  vehicle_number: string;
+  supervisor_name: string;
+  working_status: string;
+  daily_task_counter: string;
+  profile_picture: string;
+}
+
+export interface ManagerProfileFormData {
+  personal_name: string;
+  contact_number: string;
+  email: string;
+  colony_name: string;
+  colony_address: string;
+  ward_number: string;
+  zone_number: string;
+  president_name: string;
+  president_contact: string;
+  president_email: string;
+  secretary_name: string;
+  secretary_contact: string;
+  secretary_email: string;
+  number_of_buildings: string;
+  occupied_residential_units: string;
+  unoccupied_residential_units: string;
+  offices: string;
+  shops: string;
+  eateries: string;
 }
